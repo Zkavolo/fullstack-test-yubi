@@ -1,0 +1,72 @@
+body {
+  overflow-x: hidden;
+}
+.sidebar {
+  width: 55px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #6c544d;
+  color: white;
+  padding-top: 1rem;
+}
+.sidebar a {
+  color: white;
+  display: block;
+  padding: 10px 12.5px;
+  text-decoration: none;
+}
+.sidebar a:hover {
+  background-color: #93746b;
+}
+.flipped-horizontal {
+  transform: scaleX(-1);
+}
+.topbar {
+  margin-left: 50px;
+  height: 60px;
+  background-color: #fff;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+}
+.custom-text-color-2 {
+    color: #6c544d;
+}
+.content {
+  margin-left: 250px;
+  padding: 1rem;
+  margin-top: 60px;
+}
+.logo {
+  font-weight: bold;
+  font-size: 1.2rem;
+  padding: 0 0px;
+}
+.form-section {
+  margin-left: 50px;
+  border: 1px solid #ccc;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  background-color: #fafafa;
+}
+.custom-text-color {
+  color: #a97b63; 
+}
+.label-title {
+  font-weight: 600; 
+}
+.section-label {
+  background-color: #eee; 
+  font-weight: bold; 
+  padding: 8px; 
+  border-radius: 4px; 
+  margin-bottom: 10px; 
+}
+.table thead th {
+  background-color: #f0e5df;     
+}
