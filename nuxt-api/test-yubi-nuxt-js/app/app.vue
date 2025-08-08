@@ -1,0 +1,136 @@
+<template>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Primary">
+      <div class="logo">
+        <LayoutGrid class="icon" aria-hidden="true" />
+        <span class="sr-only">Logo</span>
+      </div>
+
+      <ul class="menu" role="list">
+        <li>
+          <NuxtLink to="/" aria-label="Shopping Cart" class="border">
+            <Wrench class="icon flip-x" aria-hidden="true" />
+          </NuxtLink>
+        </li>
+        <li>
+          <NuxtLink to="/" aria-label="Shopping Cart">
+            <ShoppingCart class="icon" aria-hidden="true" />
+          </NuxtLink>
+        </li>
+        <li>
+          <NuxtLink to="/" aria-label="Credit Card">
+          <CreditCard class="icon" aria-hidden="true" />
+          </NuxtLink>
+        </li>
+        <li>
+          <NuxtLink to="/" aria-label="Shopping Cart">
+            <ShoppingCart class="icon" aria-hidden="true" />
+          </NuxtLink>
+        </li>
+        <li>
+          <NuxtLink to="/" aria-label="Shopping Cart">
+            <Home class="icon" aria-hidden="true" />
+          </NuxtLink>
+        </li>
+        <li>
+          <NuxtLink to="/" aria-label="Shopping Cart">
+            <FilePlus class="icon" aria-hidden="true" />
+          </NuxtLink>
+        </li>
+      </ul>
+    </nav>
+
+    <main class="content">
+      <NuxtPage />
+    </main>
+  </div>
+</template>
+
+<script setup>
+import {
+  LayoutGrid,
+  ShoppingCart,
+  CreditCard,
+  Home,
+  FilePlus,
+  Wrench,
+} from 'lucide-vue-next'
+</script>
+
+<style scoped>
+.sidebar {
+  width: 55px;
+  height: 100vh;
+  position: fixed;
+  inset: 0 auto 0 0;
+  background-color: #6c544d;
+  color: #fff;
+  padding-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.layout {
+  display: flex;
+  height: 100vh;
+}
+
+.content {
+  margin-left: 55px;
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0.75rem;
+}
+
+.menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu a {
+  color: #fff;
+  display: block;
+  padding: 10px 12.5px;
+  text-decoration: none;
+  border-radius: 6px;
+}
+
+.menu a:hover,
+.menu a:focus-visible {
+  background-color: #93746b;
+}
+
+.menu a.border {
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+}
+
+.flip-x {
+  transform: scaleX(-1);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+</style>
