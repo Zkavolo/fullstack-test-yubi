@@ -6,7 +6,7 @@ function loadSalesOrder(soId) {
       if (result) {
         const data = result;
 
-        // Ambil data customer dari data.js
+        // Ambil data dari data.js
         const customer = customers.find(c => c.id === data.customer_id) || {};
         const currency = currencies.find(c => c.code === String(data.currency_id)) || {};
         const orderType = orderTypes.find(o => o.value === data.order_type) || {};
@@ -33,7 +33,7 @@ function loadSalesOrder(soId) {
 
           const row = document.createElement('tr');
           row.innerHTML = `
-            <td>${item.ref_type || 'N/A'}</td>
+            <td>${'  '}</td>
             <td>${product.ref_number || ''}</td>
             <td>${item.item_type || 'Products'}</td>
             <td>${product.uuid || item.product_uuid}</td>
@@ -45,7 +45,6 @@ function loadSalesOrder(soId) {
             <td>${formatNumber(item.disc_am)}</td>
             <td>${formatNumber(item.total_am)}</td>
             <td><input class="form-control form-control-sm" placeholder="Remark" value="${item.remark || ''}"></td>
-            <td><button class="btn btn-sm btn-outline-danger"><i data-feather="trash-2"></i></button></td>
           `;
           tbody.appendChild(row);
         });
@@ -60,6 +59,6 @@ function formatNumber(value) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-  const soId = 5; // Ganti sesuai kebutuhan
+  const soId = 1; // Ganti sesuai ID Sales Order yang ingin dimuat
   loadSalesOrder(soId);
 });

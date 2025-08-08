@@ -7,9 +7,9 @@ const customers = [
 ];
 
 const currencies = [
-  { code: "1", name: "IDR" },
-  { code: "2", name: "USD" },
-  { code: "3", name: "SGD" },
+  { code: 1, name: "IDR" },
+  { code: 2, name: "USD" },
+  { code: 3, name: "SGD" },
 ];
 
 const statusTypes = [
@@ -19,15 +19,15 @@ const statusTypes = [
 ];
 
 const orderTypes = [
-  { value: "sales", label: "Sales" },
-  { value: "sewa", label: "Sewa" },
-  { value: "maintenance", label: "Maintenance" },
+  { value: 1, label: "Sales" },
+  { value: 2, label: "Sewa" },
+  { value: 3, label: "Maintenance" },
 ];
 
 const products = [
-  { uuid: "uuid-pc-server-a", ref_number: "CPC002", name: "PC Server A", unit: "PIECE", price: 10000000 },
-  { uuid: "uuid-psu-500w", ref_number: "0011", name: "PSU 500W KKK", unit: "PIECE", price: 350000 },
-  { uuid: "PRD-001", ref_number: "LPT001", name: "Laptop XYZ", unit: "UNIT", price: 200000 },
-  { uuid: "4abc", ref_number: "PRT002", name: "Printer ABC", unit: "UNIT", price: 1200000 },
+  { uuid: "uuid-pc-server-a", ref_number: "CPC002", name: "PC Server A", unit: "PIECE"},
+  { uuid: "uuid-psu-500w", ref_number: "0011", name: "PSU 500W KKK", unit: "PIECE"},
+  { uuid: "PRD-001", ref_number: "LPT001", name: "Laptop XYZ", unit: "UNIT" },
+  { uuid: "4abc", ref_number: "PRT002", name: "Printer ABC", unit: "UNIT"},
 ];
 

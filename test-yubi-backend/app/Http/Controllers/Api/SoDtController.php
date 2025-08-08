@@ -42,19 +42,63 @@ class SoDtController extends Controller
 
         $data = $validator->validated();
 
-        $total_am = ($data['quantity'] * $data['price']) - ($data['disc_am'] ?? 0);
+        $disc_perc = $data['disc_perc'] ?? 0;
+        $disc_am = $data['disc_am'] ?? 0;
+
+        if ($disc_perc > 0 && $disc_am == 0) {
+            $disc_am = ($data['quantity'] * $data['price']) * ($disc_perc / 100);
+        } else if ($disc_am > 0 && $disc_perc == 0) {
+            $disc_perc = ($disc_am / ($data['quantity'] * $data['price'])) * 100;
+        } else if ($disc_perc > 0 && $disc_am > 0) {
+            // akan diprioritaskan disc_perc
+            $disc_am = ($data['quantity'] * $data['price']) * ($disc_perc / 100);
+        } else {
+            $disc_perc = 0;
+            $disc_am = 0;
+        }
+
+        $total_am = ($data['quantity'] * $data['price']) - $disc_am;
 
         $detail = SoDt::create([
             ...$data,
             'sales_order_id' => $salesOrder->id,
+            'disc_am' => $disc_am,
             'total_am' => $total_am,
         ]);
 
+        // insert langsung ke nilai pada Sales Order biar tidak hitung ulang
+        $si_total_am = SoDt::where('sales_order_id', $salesOrder->id)
+            ->sum(DB::raw('quantity * price'));
+
+        $sa_total_am = SoDt::where('sales_order_id', $salesOrder->id)
+            ->sum('total_am');
+
+        $discount_value = SoDt::where('sales_order_id', $salesOrder->id)
+            ->sum('disc_am');
+
+        $header_discount = 0;
+        if ($salesOrder->discount_type === 'percentage') {
+            $header_discount = $sa_total_am * ($salesOrder->discount_value / 100);
+        } elseif ($salesOrder->discount_type === 'nominal') {
+            $header_discount = $salesOrder->discount_value ?? 0;
+        }
+
+        $grand_total = $sa_total_am - $header_discount;
+    
+        $salesOrder->update([
+            'si_total_am' => $si_total_am,
+            'sa_total_am' => $sa_total_am,
+            'discount_value' => $discount_value,
+            'grand_total' => $grand_total,
+        ]);
+
         return response()->json([
-            'message' => 'SO Detail berhasil dibuat.',
+            'message' => 'SO Detail berhasil dibuat dan total di Sales Order diperbarui.',
             'data' => $detail
         ], 201);
     }
+
+
 
     /**
      * Display the specified resource.
@@ -100,21 +144,64 @@ class SoDtController extends Controller
 
         $data = $validator->validated();
 
-        $quantity = $data['quantity'] ?? $detail->quantity;
-        $price = $data['price'] ?? $detail->price;
-        $disc_am = $data['disc_am'] ?? $detail->disc_am ?? 0;
+        $quantity   = $data['quantity'] ?? $detail->quantity;
+        $price      = $data['price'] ?? $detail->price;
+        $disc_perc  = $data['disc_perc'] ?? $detail->disc_perc ?? 0;
+        $disc_am    = $data['disc_am'] ?? $detail->disc_am ?? 0;
+
+        if ($disc_perc > 0 && $disc_am == 0) {
+            $disc_am = ($quantity * $price) * ($disc_perc / 100);
+        } elseif ($disc_am > 0 && $disc_perc == 0) {
+            $disc_perc = ($disc_am / ($quantity * $price)) * 100;
+        } elseif ($disc_perc > 0 && $disc_am > 0) {
+            $disc_am = ($quantity * $price) * ($disc_perc / 100);
+        } else {
+            $disc_perc = 0;
+            $disc_am = 0;
+        }
+
         $total_am = ($quantity * $price) - $disc_am;
 
         $detail->update([
             ...$data,
-            'total_am' => $total_am
+            'quantity'   => $quantity,
+            'price'      => $price,
+            'disc_perc'  => $disc_perc,
+            'disc_am'    => $disc_am,
+            'total_am'   => $total_am
+        ]);
+
+        $si_total_am = SoDt::where('sales_order_id', $salesOrder->id)
+            ->sum(DB::raw('quantity * price'));
+
+        $sa_total_am = SoDt::where('sales_order_id', $salesOrder->id)
+            ->sum('total_am');
+
+        $discount_value = SoDt::where('sales_order_id', $salesOrder->id)
+            ->sum('disc_am');
+
+        $header_discount = 0;
+        if ($salesOrder->discount_type === 'percentage') {
+            $header_discount = $sa_total_am * ($salesOrder->discount_value / 100);
+        } elseif ($salesOrder->discount_type === 'nominal') {
+            $header_discount = $salesOrder->discount_value ?? 0;
+        }
+
+        $grand_total = $sa_total_am - $header_discount;
+    
+        $salesOrder->update([
+            'si_total_am' => $si_total_am,
+            'sa_total_am' => $sa_total_am,
+            'discount_value' => $discount_value,
+            'grand_total' => $grand_total,
         ]);
 
         return response()->json([
-            'message' => 'SO Detail berhasil diperbarui.',
+            'message' => 'SO Detail berhasil diperbarui dan total di Sales Order diperbarui.',
             'data' => $detail
         ]);
     }
+
 
     /**
      * Remove the specified resource from storage.

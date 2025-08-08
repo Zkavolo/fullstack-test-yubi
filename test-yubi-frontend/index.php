@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sales Dashboard</title>
+  <title>Sales Orders</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/style.css">
   <script src="https://unpkg.com/feather-icons"></script>
@@ -41,39 +41,54 @@
 
   <div class="form-section">
     <div class="section-label">
-      <div>
+    <div class="left">
         Basic Information
-      </div>
-      <div class="d-flex align-items-center">
+        <div class="icon-hide">
+            <i data-feather="eye-off"></i>
+        </div>
+        <button class="btn btn-outline-dark btn-sm">
+            <i data-feather="search"></i> Go To Sales Order
+        </button>
     </div>
+    <div class="button-container">
+      <button type="button" class="btn custom-primary-button rounded">
+        Create New
+      </button>
+      <button type="button" class="btn custom-secondary-button rounded">
+        Update
+      </button>
+      <button type="button" class="btn btn-outline-black disabled rounded">
+        Clear
+      </button>
+      <button type="button" class="btn btn-outline-danger rounded">
+        Go To List
+      </button>
+    </div>
+  </div>
     <div class="row g-3">
-      <div class="col-md-3">
+      <div class="col-md-2">
         <label class="label-title">PO Buyer No</label>
-        <input type="text" class="form-control" id="po_number" placeholder="Buy 1/2025-04-1/REV-5">
+        <input type="text" class="form-control" id="po_number" placeholder="Buy 1/2025-04-1/REV-5" readonly>
       </div>
-      <div class="col-md-3">
+      <div class="col-md-2">
         <label class="label-title">Order Type</label>
-        <input type="text" class="form-control" id="order_type" value="Sales" readonly>
+        <select class="form-select" id="order_type" readonly>
+        <option selected>Sewa</option>
+          <option >Maintanance</option>
+          <option >Sales</option>
+        </select>
       </div>
-      <div class="col-md-3">
-        <label class="label-title">Order Date</label>
-        <input type="date" class="form-control" id="so_date" value="2025-04-17">
-      </div>
-      <div class="col-md-3">
-        <label class="label-title">Shipping Date</label>
-        <input type="date" class="form-control" id="ship_date" value="2025-04-24">
-      </div>
-      <div class="col-md-4">
-        <label class="label-title">Customer</label>
+      <div class="col-md-2">
+        <label class="label-title"></label>
         <input type="text" class="form-control" id="customer" value="Buyer 1">
       </div>
-      <div class="col-md-4">
+      <div class="col-md-2">
         <label class="label-title">Email</label>
-        <input type="email" class="form-control" id="email" value="buy@gmail.com">
+        <input type="email" class="form-control" id="email" value="buy@gmail.com" disabled>
       </div>
       <div class="col-md-2">
         <label class="label-title">Phone</label>
-        <input type="text" class="form-control" id="phone" value="4444444444">
+        <input type="text" class="form-control" id="phone" value="4444444444" disabled>
       </div>
       <div class="col-md-2">
         <label class="label-title">Status</label>
@@ -83,7 +98,15 @@
           <option>COMPLETED</option>
         </select>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-2">
+        <label class="label-title">Order Date</label>
+        <input type="date" class="form-control" id="so_date" value="2025-04-17">
+      </div>
+      <div class="col-md-2">
+        <label class="label-title">Shipping Date</label>
+        <input type="date" class="form-control" id="ship_date" value="2025-04-24">
+      </div>
+      <div class="col-md-2">
         <label class="label-title">Currency</label>
         <select class="form-select" id="currency">
           <option selected>IDR</option>
@@ -95,11 +118,11 @@
         <label class="label-title">Exchange Rate</label>
         <input type="text" class="form-control" id="exchange_rate" value="1.000">
       </div>
-      <div class="col-md-3">
+      <div class="col-md-2">
         <label class="label-title">PPH (%)</label>
         <input type="text" class="form-control" id="pph" placeholder="0.00">
       </div>
-      <div class="col-md-3 d-flex align-items-end">
+      <div class="col-md-2 d-flex align-items-end">
         <div class="form-check form-switch">
           <input class="form-check-input" type="checkbox" id="vatToggle">
           <label class="form-check-label" for="vatToggle">VAT</label>
@@ -109,14 +132,33 @@
     <div class="mt-3">
       <input type="text" class="form-control" value="Buyer 1 Address" placeholder="Buyer Address">
     </div>
-    <div class="row text-center mt-3">
-      <div class="col-md-2">Sub Amount<br><strong id="sub_amount">11,400,000.00</strong></div>
-      <div class="col-md-2">Total Discount<br><strong>0.00</strong></div>
-      <div class="col-md-2">After Discount<br><strong>11,400,000.00</strong></div>
-      <div class="col-md-2">Total VAT<br><strong>0.00</strong></div>
-      <div class="col-md-2">Total PPH23<br><strong>0.00</strong></div>
-      <div class="col-md-2">Grand Total<br><strong id="grand_total">11,400,000.00</strong></div>
+  <div class="row text-center mt-3">
+    <div class="col-md-2 d-flex p-0">
+        <div class="label-box flex-grow-1">Sub Amount</div>
+          <div class="value-box flex-grow-1" id="sub_amount">11,400,000.00</div>
+      </div>
+    <div class="col-md-2 d-flex p-0">
+      <div class="label-box flex-grow-1">Total Discount</div>
+        <div class="value-box flex-grow-1">0.00</div>
+      </div>
+    <div class="col-md-2 d-flex p-0">
+      <div class="label-box flex-grow-1">After Discount</div>
+        <div class="value-box flex-grow-1">11,400,000.00</div>
     </div>
+    <div class="col-md-2 d-flex p-0">
+        <div class="label-box flex-grow-1">Total VAT</div>
+      <div class="value-box flex-grow-1">0.00</div>
+    </div>
+    <div class="col-md-2 d-flex p-0">
+        <div class="label-box flex-grow-1">Total PPH23</div>
+      <div class="value-box flex-grow-1">0.00</div>
+    </div>
+    <div class="col-md-2 d-flex p-0">
+        <div class="label-box flex-grow-1">Grand Total</div>
+      <div class="value-box flex-grow-1" id="grand_total">11,400,000.00</div>
+    </div>
+  </div>
+
   </div>
 
   <div class="form-section">
@@ -143,6 +185,7 @@
     <table class="table table-bordered mt-3">
       <thead>
         <tr>
+          <th></th>
           <th>Ref Type</th>
           <th>Ref Num</th>
           <th>Item Type</th>
@@ -160,7 +203,7 @@
       </thead>
       <tbody id="items-body">
         <tr>
-          <td>Products</td>
+          <td></td>
           <td></td>
           <td>Product</td>
           <td>CPC002</td>
@@ -172,10 +215,9 @@
           <td>0.000</td>
           <td>10,000,000.000</td>
           <td><input class="form-control form-control-sm" placeholder="Remark"></td>
-          <td><button class="btn btn-sm btn-outline-danger"><i data-feather="trash-2"></i></button></td>
         </tr>
         <tr>
-          <td>Products</td>
+          <td></td>
           <td></td>
           <td>Item</td>
           <td>0011</td>
@@ -187,7 +229,6 @@
           <td>0.000</td>
           <td>1,400,000.000</td>
           <td><input class="form-control form-control-sm" placeholder="Remark"></td>
-          <td><button class="btn btn-sm btn-outline-danger"><i data-feather="trash-2"></i></button></td>
         </tr>
       </tbody>
     </table>

@@ -68,13 +68,16 @@ class SalesOrderController extends Controller
             $si_total_am = 0;
 
             foreach ($data['soDts'] as $dt) {
-                $quantity = $dt['quantity'] ?? 0;
-                $price = $dt['price'];
-                $disc_perc = $dt['disc_perc'] ?? 0;
-                $disc_am = $dt['disc_am'] ?? 0;
-            
-                $total_item = ($quantity * $price) - $disc_am;
+                $quantity   = $dt['quantity'] ?? 0;
+                $price      = $dt['price'];
+                $disc_perc  = $dt['disc_perc'] ?? 0;
+                $disc_am    = $dt['disc_am'] ?? 0;
 
+                if ($disc_perc > 0) {
+                    $disc_am = ($quantity * $price) * ($disc_perc / 100);
+                }
+
+                $total_item = ($quantity * $price) - $disc_am;
                 $si_total_am += $total_item;
 
                 $soDtRecords[] = [
@@ -90,8 +93,8 @@ class SalesOrderController extends Controller
             }
 
             $discount_value = $data['discount_value'] ?? 0;
-            $discount_type = $data['discount_type'] ?? null;
-            $sa_total_am = $si_total_am;
+            $discount_type  = $data['discount_type'] ?? null;
+            $sa_total_am    = $si_total_am;
 
             if ($discount_type === 'percentage') {
                 $sa_total_am -= ($si_total_am * ($discount_value / 100));
@@ -129,7 +132,7 @@ class SalesOrderController extends Controller
 
             return response()->json([
                 'message' => 'Sales Order berhasil disimpan.',
-                'data' => $order->load('soDts')
+                'data'    => $order->load('soDts')
             ], 201);
 
         } catch (\Exception $e) {
@@ -138,10 +141,11 @@ class SalesOrderController extends Controller
 
             return response()->json([
                 'message' => 'Terjadi kesalahan saat menyimpan Sales Order.',
-                'error' => $e->getMessage()
+                'error'   => $e->getMessage()
             ], 500);
         }
     }
+
 
     /**
      * Display the specified resource.
@@ -159,127 +163,121 @@ class SalesOrderController extends Controller
      * Update the specified resource in storage.
      */
     public function update(Request $request, string $id)
-    {
-        $order = SalesOrder::find($id);
-        if (!$order) {
-            return response()->json(['message' => 'Sales Order tidak ditemukan.'], 404);
-        }
+{
+    $order = SalesOrder::find($id);
+    if (!$order) {
+        return response()->json(['message' => 'Sales Order tidak ditemukan.'], 404);
+    }
 
-        // Set so_number agar tidak terkena unique check
-        $request->merge(['so_number' => $order->so_number]);
+    $request->merge(['so_number' => $order->so_number]);
 
-        $validator = Validator::make($request->all(), [
-            'so_number' => 'sometimes|required|string|unique:sales_orders,so_number,' . $order->id,
-            'so_date' => 'sometimes|required|date',
-            'ship_date' => 'sometimes|required|date',
-            'customer_id' => 'sometimes|required|integer',
-            'currency_id' => 'sometimes|required|integer',
-            'status' => 'sometimes|required|in:open,closed,cancelled',
-            'order_type' => 'sometimes|required|integer',
-            'vat_id' => 'sometimes|required|integer',
-            'pph23_id' => 'sometimes|required|integer',
-            'ship_dest' => 'nullable|string',
-            'discount_value' => 'nullable|numeric',
-            'discount_type' => 'nullable|in:percentage,nominal',
+    $validator = Validator::make($request->all(), [
+        'so_number' => 'sometimes|required|string|unique:sales_orders,so_number,' . $order->id,
+        'so_date' => 'sometimes|required|date',
+        'ship_date' => 'sometimes|required|date',
+        'customer_id' => 'sometimes|required|integer',
+        'currency_id' => 'sometimes|required|integer',
+        'status' => 'sometimes|required|in:open,closed,cancelled',
+        'order_type' => 'sometimes|required|integer',
+        'vat_id' => 'sometimes|required|integer',
+        'pph23_id' => 'sometimes|required|integer',
+        'ship_dest' => 'nullable|string',
 
-            'soDts' => 'sometimes|array|min:1',
-            'soDts.*.product_uuid' => 'required_with:soDts|string',
-            'soDts.*.ref_type' => 'nullable|in:open,Products,Services',
-            'soDts.*.disc_perc' => 'nullable|numeric',
-            'soDts.*.disc_am' => 'nullable|numeric',
-            'soDts.*.quantity' => 'nullable|numeric',
-            'soDts.*.price' => 'required_with:soDts|numeric',
-            'soDts.*.total_am' => 'nullable|numeric',
-            'soDts.*.remark' => 'nullable|string',
-        ]);
+        'soDts' => 'sometimes|array|min:1',
+        'soDts.*.product_uuid' => 'required_with:soDts|string',
+        'soDts.*.ref_type' => 'nullable|in:open,Products,Services',
+        'soDts.*.disc_perc' => 'nullable|numeric',
+        'soDts.*.disc_am' => 'nullable|numeric',
+        'soDts.*.quantity' => 'nullable|numeric',
+        'soDts.*.price' => 'required_with:soDts|numeric',
+        'soDts.*.total_am' => 'nullable|numeric',
+        'soDts.*.remark' => 'nullable|string',
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
+    if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()], 422);
+    }
 
-        $data = $validator->validated();
+    $data = $validator->validated();
 
-        DB::beginTransaction();
+    DB::beginTransaction();
 
-        try {
-            $updateFields = array_filter($data, function ($key) {
-                return $key !== 'soDts';
-            }, ARRAY_FILTER_USE_KEY);
+    try {
+        $updateFields = array_filter($data, function ($key) {
+            return $key !== 'soDts';
+        }, ARRAY_FILTER_USE_KEY);
 
-            $order->fill($updateFields);
+        $order->fill($updateFields);
 
-            $si_total_am = $order->si_total_am;
-            $sa_total_am = $order->sa_total_am;
-            $grand_total = $order->grand_total;
+        $si_total_am = 0;
+        $discount_value = 0; // total diskon nominal
+        $sa_total_am = 0;
+        $grand_total = 0;
 
-            if (!empty($data['soDts'])) {
-                // Hapus detail lama
-                SoDt::where('sales_order_id', $order->id)->delete();
+        if (!empty($data['soDts'])) {
+            SoDt::where('sales_order_id', $order->id)->delete();
 
-                $soDtRecords = [];
-                $si_total_am = 0;
+            $soDtRecords = [];
 
-                foreach ($data['soDts'] as $dt) {
-                    $quantity = $dt['quantity'] ?? 0;
-                    $price = $dt['price'];
-                    $disc_am = $dt['disc_am'] ?? 0;
+            foreach ($data['soDts'] as $dt) {
+                $quantity = $dt['quantity'] ?? 0;
+                $price = $dt['price'];
+                $disc_am = $dt['disc_am'] ?? 0;
 
-                    $total_item = ($quantity * $price) - $disc_am;
-                    $si_total_am += $total_item;
+                $total_item = ($quantity * $price) - $disc_am;
+                $si_total_am += ($quantity * $price);
+                $discount_value += $disc_am;
 
-                    $soDtRecords[] = [
-                        'sales_order_id' => $order->id,
-                        'product_uuid'   => $dt['product_uuid'],
-                        'ref_type'       => $dt['ref_type'] ?? 'open',
-                        'disc_perc'      => $dt['disc_perc'] ?? 0,
-                        'disc_am'        => $disc_am,
-                        'quantity'       => $quantity,
-                        'price'          => $price,
-                        'total_am'       => $total_item,
-                        'remark'         => $dt['remark'] ?? null,
-                    ];
-                }
-
-                // Insert detail baru
-                SoDt::insert($soDtRecords);
-
-                // Hitung ulang diskon dan total jika perlu
-                $discount_value = $data['discount_value'] ?? $order->discount_value ?? 0;
-                $discount_type = $data['discount_type'] ?? $order->discount_type ?? null;
-
-                $sa_total_am = $si_total_am;
-
-                if ($discount_type === 'percentage') {
-                    $sa_total_am -= ($si_total_am * ($discount_value / 100));
-                } elseif ($discount_type === 'nominal') {
-                    $sa_total_am -= $discount_value;
-                }
-
-                $grand_total = $sa_total_am;
-
-                $order->si_total_am = $si_total_am;
-                $order->sa_total_am = $sa_total_am;
-                $order->grand_total = $grand_total;
+                $soDtRecords[] = [
+                    'sales_order_id' => $order->id,
+                    'product_uuid'   => $dt['product_uuid'],
+                    'ref_type'       => $dt['ref_type'] ?? 'open',
+                    'disc_perc'      => $dt['disc_perc'] ?? 0,
+                    'disc_am'        => $disc_am,
+                    'quantity'       => $quantity,
+                    'price'          => $price,
+                    'total_am'       => $total_item,
+                    'remark'         => $dt['remark'] ?? null,
+                ];
             }
 
-            $order->save();
+            SoDt::insert($soDtRecords);
 
-            DB::commit();
+            $sa_total_am = $si_total_am - $discount_value;
 
-            return response()->json([
-                'message' => 'Sales Order berhasil diupdate.',
-                'data' => $order->load('soDts')
-            ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Gagal update Sales Order: ' . $e->getMessage());
+            $discount_percentage = $si_total_am > 0
+                ? ($discount_value / $si_total_am) * 100
+                : 0;
 
-            return response()->json([
-                'message' => 'Terjadi kesalahan saat mengupdate Sales Order.',
-                'error' => $e->getMessage()
-            ], 500);
+            $grand_total = $sa_total_am;
+
+            $order->si_total_am = $si_total_am;
+            $order->sa_total_am = $sa_total_am;
+            $order->grand_total = $grand_total;
+            $order->discount_value = $discount_value;
+            $order->discount_type = 'nominal';
+            $order->discount_percentage = round($discount_percentage, 2);
         }
+
+        $order->save();
+
+        DB::commit();
+
+        return response()->json([
+            'message' => 'Sales Order berhasil diupdate.',
+            'data' => $order->load('soDts')
+        ]);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('Gagal update Sales Order: ' . $e->getMessage());
+
+        return response()->json([
+            'message' => 'Terjadi kesalahan saat mengupdate Sales Order.',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
+
 
     /**
      * Remove the specified resource from storage.

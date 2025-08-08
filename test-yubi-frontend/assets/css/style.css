@@ -52,7 +52,6 @@ body {
   padding: 15px;
   border-radius: 5px;
   margin-bottom: 20px;
-  background-color: #fafafa;
 }
 .custom-text-color {
   color: #a97b63; 
@@ -61,12 +60,107 @@ body {
   font-weight: 600; 
 }
 .section-label {
-  background-color: #eee; 
-  font-weight: bold; 
-  padding: 8px; 
-  border-radius: 4px; 
-  margin-bottom: 10px; 
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
+
+.section-label .left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-label .icon-hide {
+    background-color: #8B5E3C;
+    color: white;
+    border-radius: 100%;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 14px;
+    cursor: pointer;
 }
 .table thead th {
   background-color: #f0e5df;     
+}
+
+.button-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.button-container .btn {
+  white-space: nowrap;
+  padding: 5px 50px;
+  border-radius : 2px;
+  font-size: 0.85rem;
+}
+
+.custom-primary-button {
+  background-color: #6c544d; 
+  color: white;
+  cursor: pointer;
+}
+
+.custom-primary-button:hover {
+  background-color: #8B5E3C; 
+}
+
+.custom-secondary-button {
+  border-color: #8B5E3C; 
+  color: #8B5E3C; 
+  cursor: pointer;
+}
+
+.custom-secondary-button:hover {
+  background-color: #6c544d; 
+  border-color: #d9c1b4; 
+}
+
+.label-box {
+  background-color: #f4f4f4;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.value-box {
+  background-color: #ffffff;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  text-align: right;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.nav-tabs {
+  display: flex;
+  background-color: #e4e4e6;
+  border-bottom: none;
+}
+
+.nav-tabs .nav-link {
+  flex: 1;
+  text-align: center;
+  padding: 10px 20px; 
+  background-color: transparent;
+  color: #000000; 
+  border: none;
+}
+
+.nav-tabs .nav-link.active {
+  background-color: #e4e4e6;
+  color: #000000;
+  border: none;
+  border-bottom: 3px solid #000000;
 }
