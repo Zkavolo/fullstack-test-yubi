@@ -36,9 +36,9 @@
           </NuxtLink>
         </div>
         <div class="form-actions">
-          <button class="btn create">Create New</button>
-          <button class="btn update">Update</button>
-          <button class="btn clear">Clear</button>
+          <button class="btn create" @click="showForm = true">Create New</button>
+          <button class="btn update" @click="unusableButton()">Update</button>
+          <button class="btn clear" @click="unusableButton()">Clear</button>
           <button class="btn danger">
             <NuxtLink to="/">Go To List</NuxtLink>
           </button>
@@ -48,7 +48,13 @@
       <div class="form-grid">
         <input type="text" placeholder="PO Buyer No" :value="salesOrder.so_number" disabled />
         <select>
-          <option :selected="true">{{ orderType?.label || salesOrder.order_type }}</option>
+          <option 
+            v-for="o in orderTypes" 
+            :key="o.value" 
+            :selected="o.value === salesOrder.value?.order_type"
+            >
+            {{ o.label }}
+          </option>
         </select>
         <div class="customer-select">
           <span>Customer: {{ customer.name }}</span>
@@ -56,13 +62,24 @@
         </div>
         <input type="text" placeholder="Email" :value="customer.email" disabled />
         <input type="text" placeholder="Phone" :value="customer.phone" disabled />
-        <select>
-          <option :selected="true">PROCESS</option>
+        <select v-model="salesOrder.status">
+          <option 
+            v-for="o in statusTypes" 
+            :key="o.value" 
+            :value="o.value">
+            {{ o.label }}
+          </option>
         </select>
         <input type="date" :value="salesOrder.so_date" />
         <input type="date" :value="salesOrder.ship_date" />
-        <select>
-          <option :selected="true">{{ currency.name }}</option>
+        <select v-model="salesOrder.currency_id">
+          <option 
+            v-for="c in currencies" 
+            :key="c.code" 
+            :value="c.code"
+            >
+            {{ c.name }}
+          </option>
         </select>
         <input type="number" :value="formattedExchangeRate" placeholder="Exchange Rate" />
         <select>
@@ -105,7 +122,7 @@
       </div>
     </div>
 
-    <!-- Sales Order Items Table -->
+    <!-- Sales Order Details Items Table -->
     <div class="product-table-wrapper">
       <div class="tab-header">
         <button class="tab active">Ms. Product ({{ salesOrder?.so_dts?.length || 0 }})</button>
@@ -132,27 +149,94 @@
           </thead>
           <tbody>
             <tr v-for="(item, index) in salesOrder?.so_dts || []" :key="index">
-              <td>Products</td>
+              <td>{{ item.ref_type || 'Product' }}</td>
               <td>{{ getProduct(item.product_uuid)?.ref_number || '' }}</td>
-              <td>{{ item.item_type || 'Product' }}</td>
+              <td>{{ getProduct(item.product_uuid)?.item_type || '' }}</td>
               <td>{{ item.product_uuid }}</td>
               <td>{{ getProduct(item.product_uuid)?.name || '' }}</td>
               <td>{{ getProduct(item.product_uuid)?.unit || '' }}</td>
-              <td>{{ formatNumber(item.price) }}</td>
-              <td>{{ formatNumber(item.quantity) }}</td>
-              <td>{{ formatNumber(item.disc_perc) }}</td>
+              <td>
+                <input
+                  type="number"
+                  step="0.01"
+                  v-model.number="item.price"
+                />
+              </td>
+              <td>
+                <input
+                  type="number"
+                  step="1"
+                  v-model.number="item.quantity"
+                />
+              </td>
+              <td>
+                <input
+                  type="number"
+                  step="0.01"
+                  v-model.number="item.disc_perc"
+                />
+              </td>
               <td>{{ formatNumber(item.disc_am) }}</td>
               <td>{{ formatNumber(item.total_am) }}</td>
-              <td><input type="text" :value="item.remark || ''" placeholder="Remark" /></td>
               <td>
-                <button class="btn-update">Update</button>
-                <button class="btn-danger">Delete</button>
+                <input
+                  type="text"
+                  v-model="item.remark"
+                  placeholder="Remark"
+                />
+              </td>
+              <td>
+                <button class="btn-update" @click="updateOrderDetail(item)">Update</button>
+                <button class="btn-danger" @click="deleteOrderDetail(item.id)">Delete</button>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
+
+           <!-- Modal -->
+    <div v-if="showForm" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Create New Sales Order Detail</h2>
+          <span class="close" @click="showForm = false">&times;</span>
+        </div>
+        <div class="modal-body">
+          <form @submit.prevent="submitForm">
+            <label>Product UUID</label>
+            <input v-model="form.product_uuid" type="text" required />
+
+            <label>Ref Type</label>
+            <select v-model="form.ref_type">
+              <option value="Services">Services</option>
+              <option value="Products">Products</option>
+              <option value="open">Open</option>
+            </select>
+
+            <label>Quantity</label>
+            <input v-model.number="form.quantity" type="number" required />
+
+            <label>Price</label>
+            <input v-model.number="form.price" type="number" required />
+
+            <label>Discount %</label>
+            <input v-model.number="form.disc_perc" type="number" />
+
+            <label>Remark</label>
+            <input v-model="form.remark" type="text" />
+
+
+          </form>
+            <div class="modal-footer">
+              <button class="btn btn-success" @click="submitForm">Create</button>
+              <button class="btn btn-danger" @click="showForm = false">Cancel</button>
+            </div>
+          
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -162,24 +246,38 @@ import { useRoute } from 'vue-router'
 import { AlignJustify, EyeOff, LogOut, Search, SunSnow } from 'lucide-vue-next'
 import { NuxtLink } from '#components'
 import { customers, currencies, statusTypes, orderTypes, products } from '../../data/data.js'
+import axios from 'axios'
 
 const route = useRoute()
 const orderId = route.params.id
 const salesOrder = ref(null)
+const showForm = ref(false)
+const form = ref({
+  product_uuid: 'uuid-psu-500w',
+  ref_type: 'Products',
+  quantity: 5,
+  price: 10000,
+  disc_perc: 10,
+  remark: '0 remarks'
+})
 
 const customer = computed(() => {
   return customers.find(c => c.id === salesOrder.value?.customer_id) || {}
 })
 
 const currency = computed(() => {
-  return currencies.find(c => c.code === String(salesOrder.value?.currency_id)) || {}
+  return currencies.find(c => c.code === salesOrder.value?.currency_id) || {}
 })
 
 const orderType = computed(() => {
   return orderTypes.find(o => o.value === salesOrder.value?.order_type) || {}
 })
 
-const formattedExchangeRate = computed(() => formatNumber(salesOrder.value?.exchange_rate || 1))
+const status = computed(() => {
+  return statusTypes.find(s => s.value === salesOrder.value?.status) || {}
+})
+
+const formattedExchangeRate = computed(() => formatNumber(salesOrder.value?.discount_value || 1))
 
 function getProduct(uuid) {
   return products.find(p => p.uuid === uuid)
@@ -195,9 +293,74 @@ async function loadSalesOrder(id) {
     const data = await response.json()
     console.log('Sales Order Data:', data)
     salesOrder.value = data
+    console.log('Customer Data:', customer.value)
+    console.log('Currency Data:', currency.value)
+    console.log('Order Type Data:', orderType.value)
+    console.log('Status Data:', status.value)
   } catch (error) {
     console.error('Failed to load sales order:', error)
   }
+}
+
+const submitForm = async (e) => {
+  // if (e) e.stopPropagation(); // prevent bubbling
+  // console.count('submitForm called'); // track how many times
+  // console.log('Form data:', form.value);
+
+  try {
+    const response = await axios.post(
+      `http://127.0.0.1:8000/api/sales-orders/${orderId}/details`,
+      form.value
+    );
+    alert('Sales order detail created successfully!');
+    console.log(response.data);
+    showForm.value = false;
+    await loadSalesOrder(orderId);
+  } catch (error) {
+    console.error('Error submitting sales order detail:', error);
+    alert('Failed to create sales order detail.');
+  }
+};
+
+const deleteOrderDetail = async (detailId) => {
+  if (!confirm('Are you sure you want to delete this sales order detail?')) return
+
+  try {
+    await axios.delete(`http://127.0.0.1:8000/api/sales-orders/${orderId}/details/${detailId}`)
+    salesOrder.value.so_dts = salesOrder.value.so_dts.filter(d => d.id !== detailId)
+    alert('Sales order detail deleted successfully!')
+    await loadSalesOrder(orderId)
+  } catch (error) {
+    console.error('Failed to delete sales order detail:', error)
+    alert('Failed to delete sales order detail.')
+  }
+}
+
+const updateOrderDetail = async (detail) => {
+  if (!confirm("Are you sure you want to update this sales order detail?")) return;
+
+  const data = {
+    price: Number(detail.price),
+    disc_perc: Number(detail.disc_perc),
+    quantity: Number(detail.quantity),
+    remark: detail.remark || '',
+  };
+
+  try {
+    await axios.put(
+      `http://127.0.0.1:8000/api/sales-orders/${orderId}/details/${detail.id}`,
+      data
+    );
+    alert('Sales order detail updated successfully!')
+    await loadSalesOrder(orderId)
+  } catch (error) {
+    console.error('Failed to update sales order detail:', error)
+    alert('Failed to update sales order detail.')
+  }
+}
+
+function unusableButton(){
+  alert('This button has no function')
 }
 
 onMounted(() => {
@@ -560,5 +723,119 @@ input[type="text"] {
 
 .btn-clear:hover {
   background-color: #ddd;
+}
+
+.btn-primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.btn-secondary {
+  background: #6b7280;
+  color: white;
+}
+
+.btn-success {
+  background: #10b981;
+  color: white;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: white;
+}
+
+/* Modal*/
+.modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  z-index: 999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+  position: relative;
+  background-color: #fefefe;
+  border: 1px solid #888;
+  border-radius: 8px;
+  width: 80%;
+  max-height: 90%;
+  overflow-y: auto;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2), 0 6px 20px rgba(0,0,0,0.19);
+  animation: animatetop 0.4s;
+}
+
+.modal-header {
+  padding: 8px 16px;
+  background-color: #3b82f6;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.close {
+  color: white;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.close:hover {
+  color: #ddd;
+}
+
+.modal-body {
+  padding: 16px;
+}
+
+.modal-body form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-body label {
+  width: 100%;
+  max-width: 400px;
+  font-weight: 500;
+  color: #333;
+  text-align: left;
+}
+
+.modal-body input,
+.modal-body select {
+  width: 100%;
+  max-width: 400px;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background-color: #3b82f6;
+}
+
+.modal-footer button {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+}
+
+@keyframes animatetop {
+  from { top: -300px; opacity: 0 }
+  to { top: 0; opacity: 1 }
 }
 </style>

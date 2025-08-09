@@ -7,6 +7,12 @@ use App\Models\SalesOrder;
 use App\Models\SoDt;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 
 class SoDtController extends Controller
 {

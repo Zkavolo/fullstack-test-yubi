@@ -25,9 +25,9 @@ export const orderTypes = [
 ];
 
 export const products = [
-  { uuid: "uuid-pc-server-a", ref_number: "CPC002", name: "PC Server A", unit: "PIECE"},
-  { uuid: "uuid-psu-500w", ref_number: "0011", name: "PSU 500W KKK", unit: "PIECE"},
-  { uuid: "PRD-001", ref_number: "LPT001", name: "Laptop XYZ", unit: "UNIT" },
-  { uuid: "4abc", ref_number: "PRT002", name: "Printer ABC", unit: "UNIT"},
+  { uuid: "uuid-pc-server-a", ref_number: "CPC002", name: "PC Server A", unit: "PIECE", item_type : "Product"},
+  { uuid: "uuid-psu-500w", ref_number: "0011", name: "PSU 500W KKK", unit: "PIECE" ,item_type : "Product"},
+  { uuid: "PRD-001", ref_number: "LPT001", name: "Laptop XYZ", unit: "UNIT" ,item_type : "Product"},
+  { uuid: "4abc", ref_number: "PRT002", name: "Printer ABC", unit: "UNIT" ,item_type : "Product"},
 ];
 

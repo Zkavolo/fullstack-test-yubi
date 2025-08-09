@@ -6,7 +6,7 @@ Project ini dibuat untuk memenuhi tes teknikal.
 
 ## TechStack
 
-- Frontend : PHP Native
+- Frontend : PHP Native / Nuxtjs
 - Backend : Laravel
 - Database : Postgresql
 
@@ -19,7 +19,16 @@ Project ini dibuat untuk memenuhi tes teknikal.
   - Sales Orders (`sales_orders`)
   - Sales Order Details (`so_dts`)
 - Seeder untuk memudahkan pemasukkan data awal ke database
-### Frontend
+
+### Frontend Nuxtjs
+- CRUD untuk:
+  - Sales Orders (`sales_orders`)
+  - Sales Order Details (`so_dts`)
+- routing untuk navigasi ke dashboard sales order dan sales order details
+- beberapa modal yang dengan css benar2x minim untuk proses create
+- update tidak ada untuk Sales order cuman Sales order details
+
+### Frontend PHP
 - UI menggunakan PHP Native + Bootstrap 5
 
 - Halaman:
@@ -119,7 +128,15 @@ php artisan migrate
 php artisan db:seed --class=SalesOrderSeeder
 php artisan serve
 ```
-2. Jalankan frontend
+
+2. Jalankan frontend Nuxtjs
+```powershell
+cd .\nuxt-api\test-yubi-nuxt-js\
+npm i
+npm run dev
+```
+
+3. Jalankan frontend PHP
 ```powershell
 cd .\test-yubi-frontend\
 php -S localhost:8080
